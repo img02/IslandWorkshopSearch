@@ -2,7 +2,7 @@
     "Author": "img",
     "Name": "Island Workshop Search",
     "Punchline": "Helps highlight relevant workshops items",
-    "Description": "Search items by splitting words with | , ｜　、 symbols",
+    "Description": "Search items by splitting words with | , ｜　、 symbols\n\nExample: papri|shark|ink",
     "InternalName": "IslandWorkshopSearch",
     "ApplicableVersion": "any",
     "Tags": [
