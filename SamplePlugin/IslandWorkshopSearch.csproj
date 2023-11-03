@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="Dalamud.Plugin.Bootstrap.targets" />
+    <Import Project="Dalamud.Plugin.Bootstrap.targets" />
 
-  <PropertyGroup>
-    <Authors>img</Authors>
-    <Version>0.0.0.1</Version>
-    <Description>idk search the island workshop or something</Description>
-    <Copyright>no</Copyright>
-    <PackageProjectUrl>https://github.com/img02/IslandWorkshopSearch</PackageProjectUrl>
-    <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
-    <IsPackable>false</IsPackable>
-  </PropertyGroup>
+    <PropertyGroup>
+        <Authors>img</Authors>
+        <Version>0.0.0.1</Version>
+        <Description>idk search the island workshop or something</Description>
+        <Copyright>no</Copyright>
+        <PackageProjectUrl>https://github.com/img02/IslandWorkshopSearch</PackageProjectUrl>
+        <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
+        <IsPackable>false</IsPackable>
+        <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    </PropertyGroup>
 
 </Project>
