@@ -1,48 +1,52 @@
-﻿using System;
-using System.Numerics;
-using Dalamud.Interface.Internal;
-using Dalamud.Interface.Windowing;
+using Dalamud.Interface;
 using ImGuiNET;
+using IslandWorkshopSearch.Managers.WorkshopCrafts;
+using IslandWorkshopSearch.Windows.ViewModels;
+using System.Numerics;
 
-namespace SamplePlugin.Windows;
+namespace IslandWorkshopSearch.Windows;
 
-public class MainWindow : Window, IDisposable
+public unsafe class MainWindow
 {
-    private IDalamudTextureWrap GoatImage;
-    private Plugin Plugin;
-
-    public MainWindow(Plugin plugin, IDalamudTextureWrap goatImage) : base(
-        "My Amazing Window", ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse)
+    public MainWindow()
     {
-        this.SizeConstraints = new WindowSizeConstraints
-        {
-            MinimumSize = new Vector2(375, 330),
-            MaximumSize = new Vector2(float.MaxValue, float.MaxValue)
-        };
-
-        this.GoatImage = goatImage;
-        this.Plugin = plugin;
     }
 
-    public void Dispose()
+    private string searchInput = string.Empty;
+    private float searchBarWidth = 260;
+    public void Draw()
     {
-        this.GoatImage.Dispose();
-    }
+        WorkshopCrafts.GetWorkshopItemsList();
+        var ui = Search.GetUI();
+        if (ui == null) return;
 
-    public override void Draw()
-    {
-        ImGui.Text($"The random config bool is {this.Plugin.Configuration.SomePropertyToBeSavedAndWithADefault}");
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowMinSize, Vector2.Zero);
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Vector2.Zero);
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 0);
+        ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 0);
 
-        if (ImGui.Button("Show Settings"))
+        ImGui.SetNextWindowSize(new Vector2(searchBarWidth * Search.Scale, 22 * Search.Scale));
+        ImGui.SetNextWindowPos(Search.GetWorkshopAgendaGuiWindowPosWowThisIsAReallyLongName());
+
+        if (ImGui.Begin("noonewillseethis", ImGuiWindowFlags.NoMove |
+             ImGuiWindowFlags.NoTitleBar |
+            ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoResize))
         {
-            this.Plugin.DrawConfigUI();
+            ImGui.SetCursorPosY(0);
+            ImGui.SetCursorPosX(0);
+            ImGui.SetNextItemWidth(searchBarWidth * Search.Scale);
+            ImGui.SetWindowFontScale(Search.Scale); // this is blurry lol        
+            ImGui.PushFont(UiBuilder.MonoFont);
+            if (ImGui.InputTextWithHint("##idkidkidk", "Search", ref searchInput, 100))
+            {
+                Search.UpdateSearch(searchInput);
+            }
+            ImGui.PopFont();
+
+            Search.SearchWorkshop();
+
+            ImGui.End();
+            ImGui.PopStyleVar(4);
         }
-
-        ImGui.Spacing();
-
-        ImGui.Text("Have a goat:");
-        ImGui.Indent(55);
-        ImGui.Image(this.GoatImage.ImGuiHandle, new Vector2(this.GoatImage.Width, this.GoatImage.Height));
-        ImGui.Unindent(55);
     }
 }
