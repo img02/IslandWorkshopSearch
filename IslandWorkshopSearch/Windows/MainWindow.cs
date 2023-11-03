@@ -1,6 +1,5 @@
 using Dalamud.Interface;
 using ImGuiNET;
-using IslandWorkshopSearch.Managers.WorkshopCrafts;
 using IslandWorkshopSearch.Windows.ViewModels;
 using System.Numerics;
 
@@ -16,9 +15,7 @@ public unsafe class MainWindow
     private float searchBarWidth = 260;
     public void Draw()
     {
-        WorkshopCrafts.GetWorkshopItemsList();
-        var ui = Search.GetUI();
-        if (ui == null) return;
+        if (!Search.UiExists()) return;
 
         ImGui.PushStyleVar(ImGuiStyleVar.WindowMinSize, Vector2.Zero);
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Vector2.Zero);

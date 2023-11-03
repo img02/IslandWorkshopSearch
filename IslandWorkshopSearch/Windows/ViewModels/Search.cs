@@ -20,18 +20,20 @@ namespace IslandWorkshopSearch.Windows.ViewModels
             get => searchInput;
             private set => searchInput = value.Trim().ToLowerInvariant();
         }
+
         public static float Scale => UpdateScale();
         private static readonly List<WorkshopCraftsItem> Crafts = WorkshopCrafts.GetWorkshopItemsList();
-        private static readonly uint TreeListNodeId = 7;
-        private static readonly Vector4 Gold = new (255, 215, 0, 255);
+        private const string AddOnName = "MJICraftScheduleSetting";
+        private const uint TreeListNodeId = 7;
+        private static readonly Vector4 Gold = new(255, 215, 0, 255);
         private static readonly Vector4 Grey = new(200, 200, 200, 255);
-        private static readonly Vector4 White = new (255, 255, 255, 255);
-        private static readonly Vector4 DefaultColour = new (235, 225, 207, 255);
+        private static readonly Vector4 White = new(255, 255, 255, 255);
+        private static readonly Vector4 DefaultColour = new(235, 225, 207, 255);
 
         public static void UpdateSearch(string searchInput) => SearchInput = searchInput;
 
-        public static AtkUnitBase* GetUI() => (AtkUnitBase*)WorkShopSearch.GameGui.GetAddonByName("MJICraftScheduleSetting");
-
+        public static AtkUnitBase* GetUI() => (AtkUnitBase*)WorkShopSearch.GameGui.GetAddonByName(AddOnName);
+        public static bool UiExists() => GetUI() != null;
         private static float UpdateScale()
         {
             var ui = GetUI();
