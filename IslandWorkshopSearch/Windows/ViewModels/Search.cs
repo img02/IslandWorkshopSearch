@@ -1,5 +1,6 @@
-using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
+using Dalamud.Game.Addon.Events;
 using Dalamud.Game.Addon.Lifecycle;
+using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Interface.Utility;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using IslandWorkshopSearch.Managers.WorkshopCrafts;
@@ -8,8 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using Dalamud.Game.Addon.Events;
-using System.IO;
 
 namespace IslandWorkshopSearch.Windows.ViewModels
 {
@@ -21,10 +20,10 @@ namespace IslandWorkshopSearch.Windows.ViewModels
         private const uint TreeListNodeId = 7;
         private const uint ScheduleButtonNodeId = 55;
 
-        public static string SearchInput = string.Empty;      
-        private static string[] IncrementalSearchTerms = Array.Empty<string>();       
+        public static string SearchInput = string.Empty;
+        private static string[] IncrementalSearchTerms = Array.Empty<string>();
         private static readonly List<WorkshopCraftsItem> Crafts = WorkshopCrafts.GetWorkshopItemsList();
-                
+
         private static readonly Vector4 Gold = new(255, 215, 0, 255);
         private static readonly Vector4 Grey = new(200, 200, 200, 255);
         private static readonly Vector4 White = new(255, 255, 255, 255);
@@ -236,20 +235,20 @@ namespace IslandWorkshopSearch.Windows.ViewModels
 
         #endregion
 
-        public static void PostAgendaWindowSetUp(AddonEvent type, AddonArgs args)
+        public static void PostAgendaWindowSetUp(AddonEvent _, AddonArgs __)
         {
             PluginLog.Debug("yes it is setup");
-            var ui = GetUI();            
+            var ui = GetUI();
             var btn = ui->GetNodeById(ScheduleButtonNodeId);
             //automatically removed
             WorkShopSearch.AddonEventManager.AddEvent((nint)ui, (nint)btn, AddonEventType.ButtonClick, ScheduleButtonClicked);
         }
 
-        private static void ScheduleButtonClicked(AddonEventType atkEventType, IntPtr atkUnitBase, IntPtr atkResNode)
+        private static void ScheduleButtonClicked(AddonEventType _, IntPtr __, IntPtr ___)
         {
             PluginLog.Debug("yes the button was clicked yo");
             if (IncrementalSearchTerms.Length == 0) return;
-            SearchInput = string.Join(",", IncrementalSearchTerms.Skip(1));            
+            SearchInput = string.Join(",", IncrementalSearchTerms.Skip(1));
         }
 
         #region none of this panned out, but I don't want to delete it

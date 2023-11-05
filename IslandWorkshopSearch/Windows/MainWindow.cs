@@ -34,7 +34,7 @@ public unsafe class MainWindow
             ImGui.SetNextItemWidth(searchBarWidth * Search.Scale);
             ImGui.SetWindowFontScale(Search.Scale); // this is blurry lol        
             ImGui.PushFont(UiBuilder.MonoFont);
-            ImGui.InputTextWithHint("##idkidkidk", "Search", ref Search.SearchInput, 100);          
+            ImGui.InputTextWithHint("##idkidkidk", "Search", ref Search.SearchInput, 500);
             ImGui.PopFont();
 
             Search.SearchWorkshop();
