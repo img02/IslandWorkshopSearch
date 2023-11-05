@@ -1,6 +1,17 @@
 # Island Workshop Search (Dalamud Plugin)
 Just highlights island workshop agenda items and tabs based on search input.
 
+Grouped search by splitting search terms with a pipe |  
+```
+    item1|item2|item3
+```
+will search for item1, item2, and item3 all together
+
+Step-by-step search by splitting search terms with a comma ,
+```
+    item1,item2,item3
+```
+will search for item1 first, then upon clicking 'Schedule', will search for item2.
 
 
 <details>
