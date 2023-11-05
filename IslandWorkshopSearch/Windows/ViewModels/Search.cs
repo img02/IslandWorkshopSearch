@@ -1,3 +1,5 @@
+using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
+using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Interface.Utility;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using IslandWorkshopSearch.Managers.WorkshopCrafts;
@@ -6,25 +8,23 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Dalamud.Game.Addon.Events;
+using System.IO;
 
 namespace IslandWorkshopSearch.Windows.ViewModels
 {
     internal unsafe class Search
     {
-        private static string searchInput = string.Empty;
-        /// <summary>
-        /// always lowercase
-        /// </summary>
-        public static string SearchInput
-        {
-            get => searchInput;
-            private set => searchInput = value.Trim().ToLowerInvariant();
-        }
-
         public static float Scale => UpdateScale();
-        private static readonly List<WorkshopCraftsItem> Crafts = WorkshopCrafts.GetWorkshopItemsList();
-        private const string AddOnName = "MJICraftScheduleSetting";
+
+        public const string AddOnName = "MJICraftScheduleSetting";
         private const uint TreeListNodeId = 7;
+        private const uint ScheduleButtonNodeId = 55;
+
+        public static string SearchInput = string.Empty;      
+        private static string[] IncrementalSearchTerms = Array.Empty<string>();       
+        private static readonly List<WorkshopCraftsItem> Crafts = WorkshopCrafts.GetWorkshopItemsList();
+                
         private static readonly Vector4 Gold = new(255, 215, 0, 255);
         private static readonly Vector4 Grey = new(200, 200, 200, 255);
         private static readonly Vector4 White = new(255, 255, 255, 255);
@@ -32,8 +32,20 @@ namespace IslandWorkshopSearch.Windows.ViewModels
 
         public static void UpdateSearch(string searchInput) => SearchInput = searchInput;
 
+        #region atk stuff
+
         public static AtkUnitBase* GetUI() => (AtkUnitBase*)WorkShopSearch.GameGui.GetAddonByName(AddOnName);
         public static bool UiExists() => GetUI() != null;
+        private static AtkComponentList* GetTreeList(AtkUnitBase* ui)
+        {
+            var treeList = ui->GetComponentListById(TreeListNodeId);
+            if (treeList == null) return null;
+            if (treeList->AtkComponentBase.UldManager.NodeListCount < 27) return null;
+            return treeList;
+        }
+
+        #endregion
+
         private static float UpdateScale()
         {
             var ui = GetUI();
@@ -59,8 +71,8 @@ namespace IslandWorkshopSearch.Windows.ViewModels
             var six = false;
             var eight = false;
             ResetTabColours();
-            var foundNames = MatchItemsAndFilterHours(ref four, ref six, ref eight);
             ChangeAllTextColourGrey();
+            var foundNames = MatchItemsAndFilterHours(GetSearchTerms(), ref four, ref six, ref eight);
             FilterWorkshopItemList(foundNames);
             HighlightTabs(four, six, eight);
         }
@@ -69,7 +81,8 @@ namespace IslandWorkshopSearch.Windows.ViewModels
         {
             var ui = GetUI();
             if (ui == null) return;
-            var treeList = ui->GetComponentListById(TreeListNodeId);
+            var treeList = GetTreeList(ui);
+            if (treeList == null) return;
 
             if (four)
             {
@@ -95,7 +108,9 @@ namespace IslandWorkshopSearch.Windows.ViewModels
         {
             var ui = GetUI();
             if (ui == null) return;
-            var treeList = ui->GetComponentListById(TreeListNodeId);
+            var treeList = GetTreeList(ui);
+            if (treeList == null) return;
+
             for (var i = 28; i <= 30; i++)
             {
                 var list = treeList->AtkComponentBase.UldManager.NodeList[i];
@@ -104,17 +119,56 @@ namespace IslandWorkshopSearch.Windows.ViewModels
             }
         }
 
-        private static string[] MatchItemsAndFilterHours(ref bool four, ref bool six, ref bool eight)
+        #region search  string filtering
+        private static string[] GetSearchTerms()
+        {
+            // if it's got a pipe - grouped search, empty out incremental search terms
+            if (SearchInput.Contains('|') || SearchInput.Contains('｜'))
+            {
+                //PluginLog.Debug("grouped search : " + SearchInput);
+                IncrementalSearchTerms = Array.Empty<string>();
+                return GroupSearch();
+            }
+            //PluginLog.Debug("step-by-step search");
+            return IncrementalSearch();
+        }
+
+        private static string[] IncrementalSearch()
+        {
+            IncrementalSearchTerms = SplitStringIncremental();
+            return new string[] { IncrementalSearchTerms[0] };
+        }
+
+        private static string[] SplitStringIncremental()
+        {
+            var splitSearch = SearchInput.Split(new Char[] { '|', '｜' });
+            var incrementalSearch = new List<string>();
+
+            foreach (var s in splitSearch)
+            {
+                var split = s.Split(new Char[] { ',', '、' });
+
+                foreach (var item in split)
+                {
+                    incrementalSearch.Add(item);
+                }
+            }
+            return incrementalSearch.ToArray();
+        }
+
+        private static string[] GroupSearch() => SearchInput.Split(new Char[] { '|', ',', '｜', '、' });
+
+        #endregion
+
+        private static string[] MatchItemsAndFilterHours(string[] toMatch, ref bool four, ref bool six, ref bool eight)
         {
             var searchedFor = new List<string>();
-            //PluginLog.Log("----------------------");
-            //filter item names
-            var splitSearch = SearchInput.Split(new Char[] { '|', ',', '｜', '、' });
+            //PluginLog.Debug("----------------------");            
 
-            foreach (var name in splitSearch)
+            foreach (var name in toMatch)
             {
                 if (name.Length == 0) continue;
-                foreach (var c in Crafts.Where(c => c.Name.ToLowerInvariant().Contains(name.Trim())))
+                foreach (var c in Crafts.Where(c => c.Name.ToLowerInvariant().Contains(name.Trim().ToLowerInvariant())))
                 {
                     searchedFor.Add(c.Name);
                     switch (c.Hours)
@@ -123,10 +177,10 @@ namespace IslandWorkshopSearch.Windows.ViewModels
                         case 6: six = true; break;
                         case 8: eight = true; break;
                     }
-                    //PluginLog.Log($"Matched: {c.Name}|{name}");
+                    //PluginLog.Debug($"Matched: {c.Name}|{name}");
                 }
             }
-            //PluginLog.Log($"{searchedFor.Count}");
+            //PluginLog.Debug($"{searchedFor.Count}");
 
             return searchedFor.ToArray();
         }
@@ -135,7 +189,8 @@ namespace IslandWorkshopSearch.Windows.ViewModels
         {
             var ui = GetUI();
             if (ui == null) return;
-            var treeList = ui->GetComponentListById(TreeListNodeId);
+            var treeList = GetTreeList(ui);
+            if (treeList == null) return;
 
             foreach (var name in toSearch)
             {
@@ -150,6 +205,8 @@ namespace IslandWorkshopSearch.Windows.ViewModels
             }
         }
 
+        #region text colour stuff
+
         private static void ChangeTextColour(AtkTextNode* textNode, Vector4 colour)
         {
             textNode->TextColor.A = (byte)colour.W;
@@ -162,7 +219,8 @@ namespace IslandWorkshopSearch.Windows.ViewModels
         {
             var ui = GetUI();
             if (ui == null) return;
-            var treeList = ui->GetComponentListById(TreeListNodeId);
+            var treeList = GetTreeList(ui);
+            if (treeList == null) return;
 
             for (var i = 1; i <= 27; i++)
             {
@@ -176,6 +234,23 @@ namespace IslandWorkshopSearch.Windows.ViewModels
         public static void ChangeAllTextColourGrey() => ChangeAllTextColours(Grey);
         public static void ResetTextColours() => ChangeAllTextColours(DefaultColour);
 
+        #endregion
+
+        public static void PostAgendaWindowSetUp(AddonEvent type, AddonArgs args)
+        {
+            PluginLog.Debug("yes it is setup");
+            var ui = GetUI();            
+            var btn = ui->GetNodeById(ScheduleButtonNodeId);
+            //automatically removed
+            WorkShopSearch.AddonEventManager.AddEvent((nint)ui, (nint)btn, AddonEventType.ButtonClick, ScheduleButtonClicked);
+        }
+
+        private static void ScheduleButtonClicked(AddonEventType atkEventType, IntPtr atkUnitBase, IntPtr atkResNode)
+        {
+            PluginLog.Debug("yes the button was clicked yo");
+            if (IncrementalSearchTerms.Length == 0) return;
+            SearchInput = string.Join(",", IncrementalSearchTerms.Skip(1));            
+        }
 
         #region none of this panned out, but I don't want to delete it
         //this is jank af
