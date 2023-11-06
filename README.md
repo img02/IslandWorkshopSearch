@@ -1,6 +1,9 @@
 # Island Workshop Search (Dalamud Plugin)
 Just highlights island workshop agenda items and tabs based on search input.
 
+Accepts copy and pasted Overseas Casuals Squawkbox format.
+
+
 Grouped search by splitting search terms with a pipe |  
 ```
     item1|item2|item3
@@ -15,8 +18,9 @@ will search for item1 first, then upon clicking 'Schedule', will search for item
 
 
 <details>
-    <summary>Images</summary>  
+    <summary>Click to see Images</summary>  
     
+![image1](https://github.com/img02/IslandWorkshopSearch/assets/70348218/cba29462-bc54-41f3-8610-adf0c900ef45)
 ![image1](https://github.com/img02/IslandWorkshopSearch/assets/70348218/c077d581-b35c-40fc-8962-c0809cbbdd45)
 ![image3](https://github.com/img02/IslandWorkshopSearch/assets/70348218/5b8b6b2c-f489-40a6-8f6c-be8ced97da01)
 ![image4](https://github.com/img02/IslandWorkshopSearch/assets/70348218/765a825b-9d6f-468d-9a57-21234248f025)
