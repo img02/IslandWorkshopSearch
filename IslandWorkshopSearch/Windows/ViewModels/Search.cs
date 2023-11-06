@@ -4,11 +4,11 @@ using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Interface.Utility;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using IslandWorkshopSearch.Managers.WorkshopCrafts;
-using IslandWorkshopSearch.Managers.WorkshopCrafts.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Text.RegularExpressions;
 
 namespace IslandWorkshopSearch.Windows.ViewModels
 {
@@ -22,7 +22,6 @@ namespace IslandWorkshopSearch.Windows.ViewModels
 
         public static string SearchInput = string.Empty;
         private static string[] IncrementalSearchTerms = Array.Empty<string>();
-        private static readonly List<WorkshopCraftsItem> Crafts = WorkshopCrafts.GetWorkshopItemsList();
 
         private static readonly Vector4 Gold = new(255, 215, 0, 255);
         private static readonly Vector4 Grey = new(200, 200, 200, 255);
@@ -42,26 +41,28 @@ namespace IslandWorkshopSearch.Windows.ViewModels
             if (treeList->AtkComponentBase.UldManager.NodeListCount < 27) return null;
             return treeList;
         }
+        public static bool IsIncrementalSearch => IncrementalSearchTerms.Length > 1;
 
         #endregion
 
         private static float UpdateScale()
         {
             var ui = GetUI();
-            return ui == null ? 1f : ui->Scale * ImGuiHelpers.GlobalScale;
+            return ui == null ? 1f * ImGuiHelpers.GlobalScale : ui->Scale * ImGuiHelpers.GlobalScale;
         }
 
-        public static Vector2 GetWorkshopAgendaGuiWindowPosWowThisIsAReallyLongName()
+        public static Vector2 GetWorkshopAgendaGuiPos()
         {
             var ui = GetUI();
             if (ui == null) return Vector2.Zero;
-            return new Vector2(ui->GetX() + (Scale * 26), ui->GetY() - (Scale * 20));
+            return new Vector2(ui->GetX(), ui->GetY());
         }
 
         public static void SearchWorkshop()
         {
             if (SearchInput.Length == 0)
             {
+                IncrementalSearchTerms = Array.Empty<string>();
                 ResetTextColours();
                 ResetTabColours();
                 return;
@@ -124,12 +125,38 @@ namespace IslandWorkshopSearch.Windows.ViewModels
             // if it's got a pipe - grouped search, empty out incremental search terms
             if (SearchInput.Contains('|') || SearchInput.Contains('｜'))
             {
-                //PluginLog.Debug("grouped search : " + SearchInput);
+#if DEBUG
+                PluginLog.Debug("grouped search : " + SearchInput);
+#endif
                 IncrementalSearchTerms = Array.Empty<string>();
                 return GroupSearch();
             }
-            //PluginLog.Debug("step-by-step search");
+            if (SearchInput.Contains("\n")) OverseasCasualsSearch(); //format copy n paste into csv then incr.
+#if DEBUG
+            PluginLog.Debug("step-by-step search");
+#endif
             return IncrementalSearch();
+        }
+
+        private static void OverseasCasualsSearch()
+        {
+            //matches |:OC_IconName: [real name] (4h)| format of Overseas Casuals bot
+            var regx = new Regex(":.*?: (.*?) \\(\\dh\\)");
+            var regxFiltered = new List<string>();
+
+            foreach (Match c in regx.Matches(SearchInput))
+            {
+                // PluginLog.Debug(c.Groups[1].ToString()+"|");
+                try
+                {
+                    regxFiltered.Add(c.Groups[1].ToString());
+                }
+                catch (Exception e)
+                {
+                    PluginLog.Error(e.StackTrace);
+                }
+            }
+            Search.SearchInput = string.Join(',', WorkshopCrafts.LocaliseNames(regxFiltered).ToArray());
         }
 
         private static string[] IncrementalSearch()
@@ -157,7 +184,7 @@ namespace IslandWorkshopSearch.Windows.ViewModels
 
         private static string[] GroupSearch() => SearchInput.Split(new Char[] { '|', ',', '｜', '、' });
 
-        #endregion
+#endregion
 
         private static string[] MatchItemsAndFilterHours(string[] toMatch, ref bool four, ref bool six, ref bool eight)
         {
@@ -167,7 +194,7 @@ namespace IslandWorkshopSearch.Windows.ViewModels
             foreach (var name in toMatch)
             {
                 if (name.Length == 0) continue;
-                foreach (var c in Crafts.Where(c => c.Name.ToLowerInvariant().Contains(name.Trim().ToLowerInvariant())))
+                foreach (var c in WorkshopCrafts.Crafts.Where(c => c.Name.ToLowerInvariant().Contains(name.Trim().ToLowerInvariant())))
                 {
                     searchedFor.Add(c.Name);
                     switch (c.Hours)
