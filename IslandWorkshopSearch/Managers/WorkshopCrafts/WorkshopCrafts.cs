@@ -15,10 +15,10 @@ namespace IslandWorkshopSearch.Managers.WorkshopCrafts
             var craftworkItems = WorkShopSearch.DataManager.GetExcelSheet<MJICraftworksObject>(WorkShopSearch.ClientState.ClientLanguage);
             var crafts = new List<WorkshopCraftsItem>();
 
-            foreach (var cwc in craftworkItems)
+            foreach (var cwc in craftworkItems!)
             {
-                if (cwc!.Item!.Value!.RowId == 0) continue;
-                crafts.Add(new WorkshopCraftsItem(cwc!.Item!.Value!.Name, cwc!.CraftingTime, cwc!.RowId));
+                if (cwc!.Item!.Value!.RowId == 0) continue;               
+                crafts.Add(new WorkshopCraftsItem(cwc!.Item!.Value!.Name, cwc!.CraftingTime, cwc!.RowId)); 
             }
             return crafts;
         }
@@ -31,11 +31,15 @@ namespace IslandWorkshopSearch.Managers.WorkshopCrafts
 
             foreach (var search in regxFilteredInput)
             {
+                var lowercaseSearch = search.ToLowerInvariant();
                 foreach (var cwc in craftworkItems!)
                 {
                     if (cwc!.Item!.Value!.RowId == 0) continue;
-                    // are there any conflicting item names? don't think so but idk
-                    if (!cwc.Item.Value.Name.ToString().ToLowerInvariant().Contains(search.ToLowerInvariant())) continue;
+                    //PluginLog.Warning(search);
+                    // are there any conflicting item names? don't think so but idk                    
+                    var itemName = cwc.Item!.Value!.Name.ToString().ToLowerInvariant();
+                    if (itemName == OCName.MammetAward.Original) itemName = OCName.MammetAward.OCName;
+                    if (!itemName.Contains(lowercaseSearch)) continue;
 
                     //PluginLog.Error(cwc.Item.Value.Name.ToString());
 
