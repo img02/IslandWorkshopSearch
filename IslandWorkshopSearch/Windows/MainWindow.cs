@@ -1,6 +1,12 @@
 using Dalamud.Interface;
+using Dalamud.Interface.Colors;
+using Dalamud.Interface.Utility;
 using ImGuiNET;
+using IslandWorkshopSearch;
 using IslandWorkshopSearch.Windows.ViewModels;
+using Lumina.Excel.GeneratedSheets;
+using System;
+using System.Drawing;
 using System.Linq;
 using System.Numerics;
 
@@ -8,21 +14,31 @@ namespace IslandWorkshopSearch.Windows;
 
 public unsafe class MainWindow
 {
-    public MainWindow()
+    private readonly Search search;
+    private readonly Favours favours;
+
+    internal MainWindow(Search search, Favours favours)
     {
+        this.search = search;
+        this.favours = favours;
     }
 
-    private string searchInput = string.Empty;
     public void Draw()
     {
-        //Test();
-        if (!Search.UiExists()) return;
+        DrawSearchBar();
+        DrawFavourButtons();
+    }
 
-        var searchBarsize = new Vector2(260f * Search.Scale, 22f * Search.Scale);
-        //if (Search.SearchInput.Length > 0) size = new(Search.SearchInput.Length * 8 * Search.Scale , 26 * Search.Scale );
+    #region workshop search bar
 
-        var winPos = new Vector2(Search.GetWorkshopAgendaGuiPos().X + (Search.Scale * 26),
-                                 Search.GetWorkshopAgendaGuiPos().Y - (Search.Scale * 20));
+    private void DrawSearchBar()
+    {
+        if (!search.UiExists()) return;
+
+        var searchBarsize = new Vector2(260f * search.Scale, 22f * search.Scale);
+
+        var winPos = new Vector2(search.GetWorkshopAgendaGuiPos().X + 26,
+                                 search.GetWorkshopAgendaGuiPos().Y - (search.Scale * 20));
 
         ImGui.PushStyleVar(ImGuiStyleVar.WindowMinSize, Vector2.Zero);
         ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Vector2.Zero);
@@ -38,13 +54,13 @@ public unsafe class MainWindow
         {
             ImGui.SetCursorPosY(0);
             ImGui.SetCursorPosX(0);
-            ImGui.SetWindowFontScale(Search.Scale); // this is blurry lol        
+
             ImGui.PushFont(UiBuilder.MonoFont);
-            ImGui.InputTextMultiline("dsadsadsadasdsa##cosmetic tag info", ref Search.SearchInput, 2000, searchBarsize);
-            if (Search.IsIncrementalSearch) DrawTextWrappedInputDisplay();
+            ImGui.InputTextMultiline("dsadsadsadasdsa##cosmetic tag info", ref search.SearchInput, 2000, searchBarsize);
+            if (search.IsIncrementalSearch) DrawTextWrappedInputDisplay();
             ImGui.PopFont();
 
-            Search.SearchWorkshop();
+            search.SearchWorkshop();
 
             ImGui.End();
             ImGui.PopStyleVar(4);
@@ -53,8 +69,8 @@ public unsafe class MainWindow
 
     private void DrawTextWrappedInputDisplay()
     {
-        var size = new Vector2(200f * Search.Scale, 500f * Search.Scale);
-        var winPos = new Vector2(Search.GetWorkshopAgendaGuiPos().X - (size.X - 3), Search.GetWorkshopAgendaGuiPos().Y + 10);
+        var size = new Vector2(200f * search.Scale, 500f * search.Scale);
+        var winPos = new Vector2(search.GetWorkshopAgendaGuiPos().X - (size.X - 3), search.GetWorkshopAgendaGuiPos().Y + 10);
 
         ImGui.SetNextWindowSize(size);
         ImGui.SetNextWindowPos(winPos);
@@ -63,7 +79,6 @@ public unsafe class MainWindow
              ImGuiWindowFlags.NoTitleBar |
             ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoResize))
         {
-            ImGui.SetWindowFontScale(Search.Scale); // this is blurry lol
             var (first, rest) = GetFormattedDisplayText();
             ImGui.TextColored(new(1f, 215 / 255f, 0f, 1), first);
             ImGui.TextWrapped(rest);
@@ -73,9 +88,109 @@ public unsafe class MainWindow
 
     private (string first, string rest) GetFormattedDisplayText()
     {
-        var split = Search.SearchInput.Split(',');
+        var split = search.SearchInput.Split(',');
         return (split[0], string.Join('\n', split.Skip(1)));
 
     }
+
+    #endregion
+
+    #region favours 
+
+    private void DrawFavourButtons()
+    {
+        if (!favours.UiExists()) return;
+        var scale = favours.Scale;
+        var winPos = new Vector2(favours.GetWorkshopAgendaGuiPos().X + (scale * 100),
+                                favours.GetWorkshopAgendaGuiPos().Y + (scale * 180));
+
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowMinSize, Vector2.Zero);
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, Vector2.Zero);
+        ImGui.PushStyleVar(ImGuiStyleVar.WindowRounding, 0);
+        ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 0);
+
+        ImGui.SetNextWindowSize(new Vector2(400 * scale, 250 * scale));
+        ImGui.SetNextWindowPos(winPos);
+
+        if (ImGui.Begin("noonewillseethis", ImGuiWindowFlags.NoMove |
+             ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoBackground |
+            ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoResize))
+        {
+            ImGui.SetCursorPosY(0);
+            ImGui.SetCursorPosX(0);
+
+            ImGui.PushFont(UiBuilder.MonoFont);
+
+            FavorButtons(scale);
+
+            ImGui.PopFont();
+
+            ImGui.End();
+            ImGui.PopStyleVar(4);
+        }
+    }
+
+    // i put in too much effort making these ugly buttons
+   
+    private void FavorButtons(float scale)
+    {
+        var size = new Vector2(70 * scale, 22 * scale);
+        ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 30);
+        ImGui.PushStyleVar(ImGuiStyleVar.FrameBorderSize, 2);
+
+        ImGui.PushStyleColor(ImGuiCol.Button, ImGuiUtil.AltColour);
+        ImGui.PushStyleColor(ImGuiCol.Border, ImGuiUtil.MainColour);
+        ImGui.PushStyleColor(ImGuiCol.Text, ImGuiUtil.MainColour);
+        ImGui.PushStyleColor(ImGuiCol.ButtonHovered, ImGuiUtil.AltColour);
+        ImGui.PushStyleColor(ImGuiCol.ButtonActive, ImGuiUtil.AltColour);
+
+        ImGui.SetCursorPosX(200 * scale);
+        ImGui.SetCursorPosY(19 * scale);
+
+        CustomButton(size, 0, "current", favours.GetCurrent);
+        ImGuiUtil.ImGui_HoveredToolTip("get bot command for the Overseas Casuals Discord");
+
+        ImGui.SetCursorPosX(200 * scale);
+        ImGui.SetCursorPosY(209 * scale);
+        CustomButton(size, 1, "next", favours.GetNext);
+        ImGuiUtil.ImGui_HoveredToolTip("get bot command for the Overseas Casuals Discord");
+
+        ImGui.PopStyleColor(5);
+        ImGui.PopStyleVar(2);
+    }
+
+    private void CustomButton(Vector2 size, int id, string label, Func<string> fn)
+    {
+        var colToPop = 1;
+
+        ImGui.PushStyleVar(ImGuiStyleVar.ChildRounding, 999);
+        ImGui.PushStyleColor(ImGuiCol.ChildBg, ImGuiUtil.MainColour);
+
+        if (ImGui.BeginChild($"favourbtn##{id}", size))
+        {
+            if (ImGui.IsWindowFocused())
+            {
+                if (ImGui.IsMouseDown(ImGuiMouseButton.Left))
+                {
+                    ImGui.PushStyleColor(ImGuiCol.Button, ImGuiUtil.MainColour);
+                    ImGui.PushStyleColor(ImGuiCol.Border, ImGuiUtil.AltColour);
+                    ImGui.PushStyleColor(ImGuiCol.Text, ImGuiUtil.AltColour);
+                    ImGui.PushStyleColor(ImGuiCol.ButtonHovered, ImGuiUtil.MainColour);
+                    ImGui.PushStyleColor(ImGuiCol.ButtonActive, ImGuiUtil.MainColour);
+                    colToPop += 5;
+                }
+            }
+
+            if (ImGui.Button($"{label}##{id}", size))
+            {
+                ImGui.SetClipboardText(fn());
+            }
+
+            ImGui.PopStyleColor(colToPop);
+            ImGui.PopStyleVar(1);
+            ImGui.EndChild();
+        }
+    }
+    #endregion
 }
 

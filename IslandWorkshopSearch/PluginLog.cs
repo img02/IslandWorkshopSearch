@@ -6,10 +6,10 @@ namespace IslandWorkshopSearch
 {
     internal class PluginLog
     {
-        [PluginService] public static IPluginLog Logger { get; set; } = null;
+        [PluginService] public static IPluginLog Logger { get; set; } 
 
         public static void Log(string message, params object[] args) { Logger.Info(message, args); }
-        public static void Log(Exception? exception, string messageTemplate, params object[] values) { Logger.Info(messageTemplate, values); }
+        public static void Log(Exception? exception, string messageTemplate, params object[] values) { Logger.Info(exception, messageTemplate, values); }
         public static void Error(string message, params object[] args) { Logger.Error(message, args); }
         public static void Error(Exception? exception, string messageTemplate, params object[] values) { Logger.Error(exception, messageTemplate, values); }
         public static void Warning(string message, params object[] args) { Logger.Warning(message, args); }

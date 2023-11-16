@@ -23,6 +23,11 @@ namespace IslandWorkshopSearch.Managers.WorkshopCrafts
             return crafts;
         }
 
+        /// <summary>
+        /// gets names based on client language from English input (OC discord bot recomendations)
+        /// </summary>
+        /// <param name="regxFilteredInput"></param>
+        /// <returns></returns>
         public static IList<string> LocaliseNames(IList<string> regxFilteredInput)
         {
             var items = new List<string>();
@@ -32,23 +37,36 @@ namespace IslandWorkshopSearch.Managers.WorkshopCrafts
             foreach (var search in regxFilteredInput)
             {
                 var lowercaseSearch = search.ToLowerInvariant();
+
                 foreach (var cwc in craftworkItems!)
                 {
                     if (cwc!.Item!.Value!.RowId == 0) continue;
-                    //PluginLog.Warning(search);
+                    
                     // are there any conflicting item names? don't think so but idk                    
-                    var itemName = cwc.Item!.Value!.Name.ToString().ToLowerInvariant();
+                    var itemName = cwc.Item!.Value!.Name.ToString();
                     if (itemName == OCName.MammetAward.Original) itemName = OCName.MammetAward.OCName;
-                    if (!itemName.Contains(lowercaseSearch)) continue;
+                    if (!itemName.ToLowerInvariant().Contains(lowercaseSearch)) continue;
 
-                    //PluginLog.Error(cwc.Item.Value.Name.ToString());
-
-                    var item = Crafts.First(i => i.ID == cwc.RowId);
-                    //PluginLog.Warning(item.Name);
+                    var item = Crafts.First(i => i.ID == cwc.RowId);                    
                     items.Add(item.Name);
                 }
             }
             return items;
+        }
+
+       public static void ConvertNamesToEnglish(string[] favours)
+        {
+            WorkShopSearch.DataManager.Excel.RemoveSheetFromCache<MJICraftworksObject>();
+            var craftworkItems = WorkShopSearch.DataManager.GetExcelSheet<MJICraftworksObject>(Dalamud.ClientLanguage.English);
+
+            foreach (var craft in Crafts)
+            {
+                for (var i = 0; i < favours.Length; i++)
+                {
+                    if (!craft.Name.Contains(favours[i])) continue;
+                    favours[i] = craftworkItems!.First(c => c.RowId == craft.ID).Item.Value!.Name.ToString();
+                }
+            }
         }
     }
 }

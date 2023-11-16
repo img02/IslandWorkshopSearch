@@ -20,14 +20,22 @@ namespace IslandWorkshopSearch
         [PluginService] public static IAddonEventManager AddonEventManager { get; private set; }
         [PluginService] private IAddonLifecycle AddonLifecycle { get; init; }
 
+        private Favours favours { get; set; }
+        private Search search { get; set; }
+
         public WorkShopSearch(
              IPluginLog logger,
              IAddonLifecycle lifecycle
             )
         {
             PluginLog.Logger = logger;
-            AddonLifecycle!.RegisterListener(AddonEvent.PostSetup, Search.AddOnName, Search.PostAgendaWindowSetUp);
-            MainWindow = new MainWindow();
+
+            search = new Search();
+            favours = new Favours();
+
+            AddonLifecycle!.RegisterListener(AddonEvent.PostSetup, search.AddOnName, search.PostAgendaWindowSetUp);
+            AddonLifecycle!.RegisterListener(AddonEvent.PostRefresh, favours.AddOnName, favours.PostRefresh);
+            MainWindow = new MainWindow(search, favours);
             PluginInterface!.UiBuilder.Draw += DrawUI;
         }
 
@@ -35,7 +43,8 @@ namespace IslandWorkshopSearch
 
         public void Dispose()
         {
-            AddonLifecycle!.UnregisterListener(AddonEvent.PostSetup, Search.AddOnName, Search.PostAgendaWindowSetUp);
+            AddonLifecycle!.UnregisterListener(AddonEvent.PostSetup, search.AddOnName, search.PostAgendaWindowSetUp);
+            AddonLifecycle!.UnregisterListener(AddonEvent.PostRefresh, favours.AddOnName, favours.PostRefresh);
         }
     }
 }
