@@ -17,8 +17,8 @@ namespace IslandWorkshopSearch.Managers.WorkshopCrafts
 
             foreach (var cwc in craftworkItems!)
             {
-                if (cwc!.Item!.Value!.RowId == 0) continue;               
-                crafts.Add(new WorkshopCraftsItem(cwc!.Item!.Value!.Name, cwc!.CraftingTime, cwc!.RowId)); 
+                if (cwc!.Item!.Value!.RowId == 0) continue;
+                crafts.Add(new WorkshopCraftsItem(cwc!.Item!.Value!.Name, cwc!.CraftingTime, cwc!.RowId));
             }
             return crafts;
         }
@@ -31,7 +31,7 @@ namespace IslandWorkshopSearch.Managers.WorkshopCrafts
         public static IList<string> LocaliseNames(IList<string> regxFilteredInput)
         {
             var items = new List<string>();
-            WorkShopSearch.DataManager.Excel.RemoveSheetFromCache<MJICraftworksObject>();            
+            WorkShopSearch.DataManager.Excel.RemoveSheetFromCache<MJICraftworksObject>();
             var craftworkItems = WorkShopSearch.DataManager.GetExcelSheet<MJICraftworksObject>(Dalamud.ClientLanguage.English);
 
             foreach (var search in regxFilteredInput)
@@ -41,20 +41,20 @@ namespace IslandWorkshopSearch.Managers.WorkshopCrafts
                 foreach (var cwc in craftworkItems!)
                 {
                     if (cwc!.Item!.Value!.RowId == 0) continue;
-                    
+
                     // are there any conflicting item names? don't think so but idk                    
                     var itemName = cwc.Item!.Value!.Name.ToString();
                     if (itemName == OCName.MammetAward.Original) itemName = OCName.MammetAward.OCName;
                     if (!itemName.ToLowerInvariant().Contains(lowercaseSearch)) continue;
 
-                    var item = Crafts.First(i => i.ID == cwc.RowId);                    
+                    var item = Crafts.First(i => i.ID == cwc.RowId);
                     items.Add(item.Name);
                 }
             }
             return items;
         }
 
-       public static void ConvertNamesToEnglish(string[] favours)
+        public static void ConvertNamesToEnglish(string[] favours)
         {
             WorkShopSearch.DataManager.Excel.RemoveSheetFromCache<MJICraftworksObject>();
             var craftworkItems = WorkShopSearch.DataManager.GetExcelSheet<MJICraftworksObject>(Dalamud.ClientLanguage.English);
@@ -63,7 +63,7 @@ namespace IslandWorkshopSearch.Managers.WorkshopCrafts
             {
                 for (var i = 0; i < favours.Length; i++)
                 {
-                    if (!craft.Name.Contains(favours[i])) continue;
+                    if (!craft.Name.Equals(favours[i])) continue;
                     favours[i] = craftworkItems!.First(c => c.RowId == craft.ID).Item.Value!.Name.ToString();
                 }
             }
