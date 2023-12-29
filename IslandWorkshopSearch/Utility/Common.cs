@@ -1,4 +1,5 @@
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using IslandWorkshopSearch.Windows.ViewModels;
 
 namespace IslandWorkshopSearch.Utility
 {
@@ -13,10 +14,20 @@ namespace IslandWorkshopSearch.Utility
             for (var i = 0; i < uldManager->NodeListCount; i++)
             {
                 var n = uldManager->NodeList[i];
-                if (n->NodeID != nodeId || type != null && n->Type != type.Value) continue;
+                if (n->NodeID != nodeId || (type != null && n->Type != type.Value)) continue;
                 return (T*)n;
             }
             return null;
+        }
+
+        public static AtkUnitBase* GetUI(string AddOnName) => (AtkUnitBase*)WorkShopSearch.GameGui!.GetAddonByName(AddOnName);
+
+        public static AtkComponentList* GetWorkshopAgendaTreeList(AtkUnitBase* ui)
+        {
+            var treeList = ui->GetComponentListById(Search.TreeListNodeId);
+            if (treeList == null) return null;
+            if (treeList->AtkComponentBase.UldManager.NodeListCount < 27) return null;
+            return treeList;
         }
     }
 }

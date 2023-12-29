@@ -1,16 +1,11 @@
-using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Game.Addon.Lifecycle;
-using Dalamud.Interface.Utility;
+using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-using System.Runtime.InteropServices;
-using System.Threading;
 using IslandWorkshopSearch.Managers.WorkshopCrafts;
+using IslandWorkshopSearch.Utility;
+using System;
+using System.Numerics;
+using System.Runtime.InteropServices;
 
 namespace IslandWorkshopSearch.Windows.ViewModels
 {
@@ -22,7 +17,7 @@ namespace IslandWorkshopSearch.Windows.ViewModels
 
         public float Scale => UpdateScale();
 
-        public AtkUnitBase* GetUI() => (AtkUnitBase*)WorkShopSearch.GameGui.GetAddonByName(AddOnName);
+        public AtkUnitBase* GetUI() => Common.GetUI(AddOnName);
         public bool UiExists() => GetUI() != null;
 
 
@@ -40,7 +35,7 @@ namespace IslandWorkshopSearch.Windows.ViewModels
         private float UpdateScale()
         {
             var ui = GetUI();
-            return ui == null ? 1f : ui->Scale ;
+            return ui == null ? 1f : ui->Scale;
         }
 
         public string GetCurrent()

@@ -14,10 +14,10 @@ namespace IslandWorkshopSearch
 
         private MainWindow MainWindow { get; init; }
 
-        [PluginService] public static IGameGui GameGui { get; private set; }
-        [PluginService] public static IDataManager DataManager { get; private set; }
-        [PluginService] public static IClientState ClientState { get; private set; }
-        [PluginService] public static IAddonEventManager AddonEventManager { get; private set; }
+        [PluginService] public static IGameGui? GameGui { get; private set; }
+        [PluginService] public static IDataManager? DataManager { get; private set; }
+        [PluginService] public static IClientState? ClientState { get; private set; }
+        [PluginService] public static IAddonEventManager? AddonEventManager { get; private set; }
         [PluginService] private IAddonLifecycle AddonLifecycle { get; init; }
 
         private Favours favours { get; set; }

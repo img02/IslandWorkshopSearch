@@ -1,12 +1,8 @@
 using Dalamud.Interface;
-using Dalamud.Interface.Colors;
-using Dalamud.Interface.Utility;
 using ImGuiNET;
-using IslandWorkshopSearch;
+using IslandWorkshopSearch.Utility;
 using IslandWorkshopSearch.Windows.ViewModels;
-using Lumina.Excel.GeneratedSheets;
 using System;
-using System.Drawing;
 using System.Linq;
 using System.Numerics;
 
@@ -131,7 +127,7 @@ public unsafe class MainWindow
     }
 
     // i put in too much effort making these ugly buttons
-   
+
     private void FavorButtons(float scale)
     {
         var size = new Vector2(70 * scale, 22 * scale);

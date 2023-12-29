@@ -1,17 +1,13 @@
 using Dalamud.Interface;
 using ImGuiNET;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace IslandWorkshopSearch
+namespace IslandWorkshopSearch.Utility
 {
     internal class ImGuiUtil
     {
-        public static readonly uint AltColour = ImGui.ColorConvertFloat4ToU32(new Vector4(172f/255, 155f/255, 132f/255, 1));        
+        public static readonly uint AltColour = ImGui.ColorConvertFloat4ToU32(new Vector4(172f / 255, 155f / 255, 132f / 255, 1));
         public static readonly uint MainColour = ImGui.ColorConvertFloat4ToU32(new Vector4(46 / 255f, 34 / 255f, 28 / 255f, 1));
 
         public static void DoStuffWithMonoFont(Action function)
