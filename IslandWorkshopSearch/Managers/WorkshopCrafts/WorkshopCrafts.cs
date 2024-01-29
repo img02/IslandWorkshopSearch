@@ -41,11 +41,14 @@ namespace IslandWorkshopSearch.Managers.WorkshopCrafts
                 foreach (var cwc in craftworkItems!)
                 {
                     if (cwc!.Item!.Value!.RowId == 0) continue;
-
-                    // are there any conflicting item names? don't think so but idk                    
+                    
                     var itemName = cwc.Item!.Value!.Name.ToString();
+
+                    // OC bot output name diff
                     if (itemName == OCName.MammetAward.Original) itemName = OCName.MammetAward.OCName;
-                    if (!itemName.ToLowerInvariant().Contains(lowercaseSearch)) continue;
+
+                    //
+                    if (!itemName.ToLowerInvariant().EndsWith(lowercaseSearch)) continue;
 
                     var item = Crafts.First(i => i.ID == cwc.RowId);
                     items.Add(item.Name);
