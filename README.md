@@ -1,4 +1,4 @@
-# Island Workshop Search (Dalamud Plugin)
+# Island Workshop Search (Dalamud Plugin) ![downloads count](https://img.shields.io/endpoint?url=https://qzysathwfhebdai6xgauhz4q7m0mzmrf.lambda-url.us-east-1.on.aws/IslandWorkshopSearch)
 Just highlights island workshop agenda items and tabs based on search input.
 
 Accepts copy and pasted Overseas Casuals Squawkbox format.
