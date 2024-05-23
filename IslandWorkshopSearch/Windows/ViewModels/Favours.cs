@@ -58,6 +58,10 @@ namespace IslandWorkshopSearch.Windows.ViewModels
                 {
                     favours[i] = favours[i][10..];
                 }
+                if (favours[i].Contains("Island "))
+                {
+                    favours[i] = favours[i][7..];
+                }
                 if (favours[i].Contains(OCName.MammetAward.Original))
                 {
                     favours[i] = OCName.MammetAward.OCName;

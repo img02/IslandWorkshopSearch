@@ -4,7 +4,7 @@
 
     <PropertyGroup>
         <Authors>img</Authors>
-        <Version>0.0.0.3</Version>
+        <Version>1.0.0.0</Version>
         <Description>idk search the island workshop or something</Description>
         <Copyright>no</Copyright>
         <PackageProjectUrl>https://github.com/img02/IslandWorkshopSearch</PackageProjectUrl>
