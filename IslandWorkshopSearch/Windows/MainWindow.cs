@@ -31,7 +31,7 @@ public unsafe class MainWindow
     {
         if (!search.UiExists()) return;
 
-        var searchBarsize = new Vector2(260f * search.Scale, 22f * search.Scale);
+        var searchBarsize = new Vector2(260f * search.Scale, 24f * search.Scale);
 
         var winPos = new Vector2(search.GetWorkshopAgendaGuiPos().X + 26,
                                  search.GetWorkshopAgendaGuiPos().Y - (search.Scale * 20));
