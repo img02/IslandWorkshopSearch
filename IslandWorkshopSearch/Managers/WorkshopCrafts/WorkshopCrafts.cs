@@ -32,7 +32,7 @@ namespace IslandWorkshopSearch.Managers.WorkshopCrafts
         {
             var items = new List<string>();
             WorkShopSearch.DataManager.Excel.RemoveSheetFromCache<MJICraftworksObject>();
-            var craftworkItems = WorkShopSearch.DataManager.GetExcelSheet<MJICraftworksObject>(Dalamud.ClientLanguage.English);
+            var craftworkItems = WorkShopSearch.DataManager.GetExcelSheet<MJICraftworksObject>(Dalamud.Game.ClientLanguage.English);
 
             foreach (var search in regxFilteredInput)
             {
@@ -60,7 +60,7 @@ namespace IslandWorkshopSearch.Managers.WorkshopCrafts
         public static void ConvertNamesToEnglish(string[] favours)
         {
             WorkShopSearch.DataManager.Excel.RemoveSheetFromCache<MJICraftworksObject>();
-            var craftworkItems = WorkShopSearch.DataManager.GetExcelSheet<MJICraftworksObject>(Dalamud.ClientLanguage.English);
+            var craftworkItems = WorkShopSearch.DataManager.GetExcelSheet<MJICraftworksObject>(Dalamud.Game.ClientLanguage.English);
 
             foreach (var craft in Crafts)
             {

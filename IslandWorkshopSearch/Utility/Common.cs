@@ -14,7 +14,7 @@ namespace IslandWorkshopSearch.Utility
             for (var i = 0; i < uldManager->NodeListCount; i++)
             {
                 var n = uldManager->NodeList[i];
-                if (n->NodeID != nodeId || (type != null && n->Type != type.Value)) continue;
+                if (n->NodeId != nodeId || (type != null && n->Type != type.Value)) continue;
                 return (T*)n;
             }
             return null;

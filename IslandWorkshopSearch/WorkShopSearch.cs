@@ -10,7 +10,7 @@ namespace IslandWorkshopSearch
     public sealed class WorkShopSearch : IDalamudPlugin
     {
         public string Name => "Island Workshop Search";
-        [PluginService] private DalamudPluginInterface PluginInterface { get; init; }
+        [PluginService] private IDalamudPluginInterface PluginInterface { get; init; }
 
         private MainWindow MainWindow { get; init; }
 
