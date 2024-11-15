@@ -1,5 +1,5 @@
 using IslandWorkshopSearch.Managers.WorkshopCrafts.Models;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -11,14 +11,14 @@ namespace IslandWorkshopSearch.Managers.WorkshopCrafts
 
         private static IList<WorkshopCraftsItem> GetWorkshopItemsList()
         {
-            WorkShopSearch.DataManager.Excel.RemoveSheetFromCache<MJICraftworksObject>();
-            var craftworkItems = WorkShopSearch.DataManager.GetExcelSheet<MJICraftworksObject>(WorkShopSearch.ClientState.ClientLanguage);
+            //WorkShopSearch.DataManager!.Excel.RemoveSheetFromCache<MJICraftworksObject>();
+            var craftworkItems = WorkShopSearch.DataManager!.GetExcelSheet<MJICraftworksObject>(WorkShopSearch.ClientState!.ClientLanguage);
             var crafts = new List<WorkshopCraftsItem>();
 
             foreach (var cwc in craftworkItems!)
             {
                 if (cwc!.Item!.Value!.RowId == 0) continue;
-                crafts.Add(new WorkshopCraftsItem(cwc!.Item!.Value!.Name, cwc!.CraftingTime, cwc!.RowId));
+                crafts.Add(new WorkshopCraftsItem(cwc!.Item!.Value!.Name.ToString(), cwc!.CraftingTime, cwc!.RowId));
             }
             return crafts;
         }
@@ -31,8 +31,8 @@ namespace IslandWorkshopSearch.Managers.WorkshopCrafts
         public static IList<string> LocaliseNames(IList<string> regxFilteredInput)
         {
             var items = new List<string>();
-            WorkShopSearch.DataManager.Excel.RemoveSheetFromCache<MJICraftworksObject>();
-            var craftworkItems = WorkShopSearch.DataManager.GetExcelSheet<MJICraftworksObject>(Dalamud.Game.ClientLanguage.English);
+            //WorkShopSearch.DataManager.Excel.RemoveSheetFromCache<MJICraftworksObject>();
+            var craftworkItems = WorkShopSearch.DataManager!.GetExcelSheet<MJICraftworksObject>(Dalamud.Game.ClientLanguage.English);
 
             foreach (var search in regxFilteredInput)
             {
@@ -59,8 +59,8 @@ namespace IslandWorkshopSearch.Managers.WorkshopCrafts
 
         public static void ConvertNamesToEnglish(string[] favours)
         {
-            WorkShopSearch.DataManager.Excel.RemoveSheetFromCache<MJICraftworksObject>();
-            var craftworkItems = WorkShopSearch.DataManager.GetExcelSheet<MJICraftworksObject>(Dalamud.Game.ClientLanguage.English);
+            //WorkShopSearch.DataManager.Excel.RemoveSheetFromCache<MJICraftworksObject>();
+            var craftworkItems = WorkShopSearch.DataManager!.GetExcelSheet<MJICraftworksObject>(Dalamud.Game.ClientLanguage.English);
 
             foreach (var craft in Crafts)
             {
