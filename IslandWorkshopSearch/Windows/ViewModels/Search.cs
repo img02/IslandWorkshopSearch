@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace IslandWorkshopSearch.Windows.ViewModels
 {
@@ -25,15 +26,133 @@ namespace IslandWorkshopSearch.Windows.ViewModels
         public string SearchInput = string.Empty;
         private string[] incrementalSearchTerms = Array.Empty<string>();
 
+        private AtkComponentTreeList* TreeList;
+        private bool AutoSelectEnabled = true;
 
+        public void UpdateSearch(string searchInput)
+        {
+            SearchInput = searchInput;
+            if (AutoSelectEnabled)
+            {
+                AutoSelectItem();
+            }
+        }
 
-        public void UpdateSearch(string searchInput) => SearchInput = searchInput;
+        private void AutoSelectItem()
+        {
+            if (string.IsNullOrWhiteSpace(SearchInput)) return;
+
+            var ui = GetUI();
+            if (ui == null) return;
+
+            if (!ui->IsVisible || ui->UldManager.LoadedState != AtkLoadState.Loaded) return;
+
+            TreeList = GetTreeList(ui);
+            if (TreeList == null) return;
+
+            if (TreeList->Items.LongCount == 0) return;
+
+            var entries = new List<(int Index, string ItemName)>();
+            var searchTerms = GetSearchTerms();
+            if (searchTerms.Length == 0) return;
+
+            var currentTerm = searchTerms[0].Trim().ToLowerInvariant();
+            if (string.IsNullOrEmpty(currentTerm)) return;
+
+            for (var i = 0; i < TreeList->Items.LongCount; i++)
+            {
+                var item = TreeList->Items[i].Value;
+                if (item != null && item->UIntValues.LongCount >= 3 && item->UIntValues[0] != (uint)AtkComponentTreeListItemType.CollapsibleGroupHeader)
+                {
+                    var rowId = item->UIntValues[2];
+                    var craftItem = WorkshopCrafts.Crafts.FirstOrDefault(c => c.ID == rowId);
+                    if (craftItem != null)
+                    {
+                        entries.Add((i, craftItem.Name.ToLowerInvariant()));
+                    }
+                }
+            }
+
+            var exactMatch = entries.FirstOrDefault(e => e.ItemName == currentTerm);
+            if (exactMatch != default)
+            {
+                SelectAndExpandItem(exactMatch.Index);
+                return;
+            }
+
+            var partialMatch = entries.FirstOrDefault(e => e.ItemName.Contains(currentTerm));
+            if (partialMatch != default)
+            {
+                SelectAndExpandItem(partialMatch.Index);
+            }
+        }
+
+        private void SelectAndExpandItem(int index)
+        {
+            var item = TreeList->GetItem(index);
+            if (item == null) return;
+
+            for (var i = index; i >= 0; i--)
+            {
+                var headerItem = TreeList->Items[i].Value;
+                if (headerItem != null && headerItem->UIntValues.LongCount >= 1 && headerItem->UIntValues[0] == (uint)AtkComponentTreeListItemType.CollapsibleGroupHeader)
+                {
+                    TreeList->ExpandGroupExclusively(headerItem, false);
+                    TreeList->LayoutRefreshPending = true;
+                    break;
+                }
+            }
+
+            TreeList->SelectItem(index, true);
+        }
+
+        private float CalculateFuzzyScore(string str1, string str2)
+        {
+            if (string.IsNullOrEmpty(str1) || string.IsNullOrEmpty(str2))
+                return 0;
+
+            str1 = str1.ToLower();
+            str2 = str2.ToLower();
+
+            if (str1.Contains(str2))
+                return 1.0f;
+
+            var distance = LevenshteinDistance(str1, str2);
+            var maxLength = Math.Max(str1.Length, str2.Length);
+            return 1.0f - ((float)distance / maxLength);
+        }
+
+        private int LevenshteinDistance(string str1, string str2)
+        {
+            var n = str1.Length;
+            var m = str2.Length;
+            var d = new int[n + 1, m + 1];
+
+            if (n == 0) return m;
+            if (m == 0) return n;
+
+            for (var i = 0; i <= n; i++)
+                d[i, 0] = i;
+            for (var j = 0; j <= m; j++)
+                d[0, j] = j;
+
+            for (var i = 1; i <= n; i++)
+            {
+                for (var j = 1; j <= m; j++)
+                {
+                    var cost = (str2[j - 1] == str1[i - 1]) ? 0 : 1;
+                    d[i, j] = Math.Min(Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1), d[i - 1, j - 1] + cost);
+                }
+            }
+
+            return d[n, m];
+        }
 
         #region atk stuff
 
         public AtkUnitBase* GetUI() => Common.GetUI(AddOnName);
         public bool UiExists() => GetUI() != null;
-        private AtkComponentList* GetTreeList(AtkUnitBase* ui) => Common.GetWorkshopAgendaTreeList(ui);
+        private AtkComponentTreeList* GetTreeList(AtkUnitBase* ui) => (AtkComponentTreeList*)Common.GetWorkshopAgendaTreeList(ui);
 
         public bool IsIncrementalSearch => incrementalSearchTerms.Length > 1;
 
@@ -81,19 +200,19 @@ namespace IslandWorkshopSearch.Windows.ViewModels
 
             if (four)
             {
-                var fourHourList = treeList->AtkComponentBase.UldManager.NodeList[28];
+                var fourHourList = ((AtkComponentBase*)treeList)->UldManager.NodeList[28];
                 var fourText = ((AtkComponentNode*)fourHourList)->Component->UldManager.NodeList[2]->GetAsAtkTextNode();
                 TextNodeColour.ChangeTextColourGold(fourText);
             }
             if (six)
             {
-                var sixHourList = treeList->AtkComponentBase.UldManager.NodeList[29];
+                var sixHourList = ((AtkComponentBase*)treeList)->UldManager.NodeList[29];
                 var sixText = ((AtkComponentNode*)sixHourList)->Component->UldManager.NodeList[2]->GetAsAtkTextNode();
                 TextNodeColour.ChangeTextColourGold(sixText);
             }
             if (eight)
             {
-                var eightHourList = treeList->AtkComponentBase.UldManager.NodeList[30];
+                var eightHourList = ((AtkComponentBase*)treeList)->UldManager.NodeList[30];
                 var eightText = ((AtkComponentNode*)eightHourList)->Component->UldManager.NodeList[2]->GetAsAtkTextNode();
                 TextNodeColour.ChangeTextColourGold(eightText);
             }
@@ -108,7 +227,7 @@ namespace IslandWorkshopSearch.Windows.ViewModels
 
             for (var i = 28; i <= 30; i++)
             {
-                var list = treeList->AtkComponentBase.UldManager.NodeList[i];
+                var list = ((AtkComponentBase*)treeList)->UldManager.NodeList[i];
                 var text = ((AtkComponentNode*)list)->Component->UldManager.NodeList[2]->GetAsAtkTextNode();
                 TextNodeColour.ChangeTextColourWhite(text);
             }
@@ -193,7 +312,7 @@ namespace IslandWorkshopSearch.Windows.ViewModels
             {
                 for (var i = 1; i <= 27; i++)
                 {
-                    var listItemNode = treeList->AtkComponentBase.UldManager.NodeList[i];
+                    var listItemNode = ((AtkComponentBase*)treeList)->UldManager.NodeList[i];
                     var textNode = ((AtkComponentNode*)listItemNode)->Component->UldManager.NodeList[3]->GetAsAtkTextNode();
                     if (textNode == null) continue;
                     if (textNode->NodeText.ToString() != name) continue;
@@ -209,6 +328,16 @@ namespace IslandWorkshopSearch.Windows.ViewModels
             var btn = ui->GetNodeById(ScheduleButtonNodeId);
             //automatically removed
             WorkShopSearch.AddonEventManager!.AddEvent((nint)ui, (nint)btn, AddonEventType.ButtonClick, ScheduleButtonClicked);
+
+            if (!string.IsNullOrEmpty(SearchInput))
+            {
+                SearchWorkshop();
+                
+                Task.Delay(100).ContinueWith(_ =>
+                {
+                    AutoSelectItem();
+                });
+            }
         }
 
         private void ScheduleButtonClicked(AddonEventType _, IntPtr __, IntPtr ___)
@@ -216,6 +345,21 @@ namespace IslandWorkshopSearch.Windows.ViewModels
             PluginLog.Debug("yes the button was clicked yo");
             if (incrementalSearchTerms.Length == 0) return;
             SearchInput = string.Join(",", incrementalSearchTerms.Skip(1));
+        }
+
+        public void HandleEnterKey()
+        {
+            var ui = GetUI();
+            if (ui == null) return;
+
+            var evt = new AtkEvent();
+            ui->ReceiveEvent(AtkEventType.ButtonClick, 6, &evt);
+
+            if (incrementalSearchTerms.Length > 0)
+            {
+                SearchInput = string.Join(",", incrementalSearchTerms.Skip(1));
+                incrementalSearchTerms = GetSearchTerms();
+            }
         }
     }
 }

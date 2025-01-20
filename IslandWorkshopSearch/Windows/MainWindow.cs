@@ -12,6 +12,7 @@ public unsafe class MainWindow
 {
     private readonly Search search;
     private readonly Favours favours;
+    private bool shouldFocus = true;
 
     internal MainWindow(Search search, Favours favours)
     {
@@ -52,7 +53,40 @@ public unsafe class MainWindow
             ImGui.SetCursorPosX(0);
 
             ImGui.PushFont(UiBuilder.MonoFont);
-            ImGui.InputTextMultiline("dsadsadsadasdsa##cosmetic tag info", ref search.SearchInput, 2000, searchBarsize);
+            
+            if (ImGui.IsWindowAppearing())
+            {
+                shouldFocus = true;
+            }
+
+            if (shouldFocus)
+            {
+                ImGui.SetKeyboardFocusHere();
+                shouldFocus = false;
+            }
+            
+            var currentInput = search.SearchInput;
+            var searchChanged = ImGui.InputTextMultiline("dsadsadsadasdsa##cosmetic tag info", 
+                ref search.SearchInput, 
+                2000, 
+                searchBarsize, 
+                ImGuiInputTextFlags.EnterReturnsTrue | ImGuiInputTextFlags.AutoSelectAll);
+
+            if (currentInput != search.SearchInput || 
+                ImGui.IsKeyPressed(ImGuiKey.Comma) || 
+                (ImGui.GetIO().KeyCtrl && ImGui.IsKeyPressed(ImGuiKey.V)) ||
+                ImGui.IsWindowFocused())
+            {
+                search.UpdateSearch(search.SearchInput);
+                shouldFocus = true;
+            }
+            
+            if (searchChanged && 
+                (ImGui.GetIO().KeyCtrl || ImGui.GetIO().KeysDown[(int)ImGuiKey.LeftCtrl] || ImGui.GetIO().KeysDown[(int)ImGuiKey.RightCtrl]))
+            {
+                search.HandleEnterKey();
+                shouldFocus = true;
+            }
             if (search.IsIncrementalSearch) DrawTextWrappedInputDisplay();
             ImGui.PopFont();
 
