@@ -88,13 +88,13 @@ namespace IslandWorkshopSearch.Windows.ViewModels
 
             try
             {
-                current[0] = Marshal.PtrToStringUTF8((nint)(values[baseIndex].String))!;
-                current[1] = Marshal.PtrToStringUTF8(((nint)values[baseIndex += 8].String))!;
-                current[2] = Marshal.PtrToStringUTF8(((nint)values[baseIndex += 8].String))!;
+                current[0] = Marshal.PtrToStringUTF8((nint)(values[baseIndex].String.Value))!;
+                current[1] = Marshal.PtrToStringUTF8(((nint)values[baseIndex += 8].String.Value))!;
+                current[2] = Marshal.PtrToStringUTF8(((nint)values[baseIndex += 8].String.Value))!;
 
-                next[0] = Marshal.PtrToStringUTF8((nint)values[baseIndex += 8].String)!;
-                next[1] = Marshal.PtrToStringUTF8((nint)values[baseIndex += 8].String)!;
-                next[2] = Marshal.PtrToStringUTF8((nint)values[baseIndex += 8].String)!;
+                next[0] = Marshal.PtrToStringUTF8((nint)values[baseIndex += 8].String.Value)!;
+                next[1] = Marshal.PtrToStringUTF8((nint)values[baseIndex += 8].String.Value)!;
+                next[2] = Marshal.PtrToStringUTF8((nint)values[baseIndex += 8].String.Value)!;
             }
             catch (Exception e)
             {
